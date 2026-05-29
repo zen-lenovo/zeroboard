@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +20,7 @@ app = FastAPI(title="Logs Dashboard API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:8080"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,11 +30,11 @@ app.add_middleware(
 def apply_filters(
     statement,
     *,
-    search: str | None,
-    severity: str | None,
-    source: str | None,
-    start_date: datetime | None,
-    end_date: datetime | None,
+    search: Optional[str],
+    severity: Optional[str],
+    source: Optional[str],
+    start_date: Optional[datetime],
+    end_date: Optional[datetime],
 ):
     if search:
         pattern = f"%{search.strip()}%"
@@ -87,11 +87,11 @@ def list_logs(
     db: Annotated[Session, Depends(get_db)],
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=10, ge=1, le=100),
-    search: str | None = None,
-    severity: str | None = None,
-    source: str | None = None,
-    start_date: datetime | None = None,
-    end_date: datetime | None = None,
+    search: Optional[str] = None,
+    severity: Optional[str] = None,
+    source: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
     sort_by: str = Query(default="timestamp", pattern="^(timestamp|severity|source)$"),
     sort_order: str = Query(default="desc", pattern="^(asc|desc)$"),
 ) -> PaginatedLogs:
@@ -113,11 +113,11 @@ def list_logs(
 @app.get("/api/logs/query/raw", response_model=list[LogRead])
 def raw_logs(
     db: Annotated[Session, Depends(get_db)],
-    search: str | None = None,
-    severity: str | None = None,
-    source: str | None = None,
-    start_date: datetime | None = None,
-    end_date: datetime | None = None,
+    search: Optional[str] = None,
+    severity: Optional[str] = None,
+    source: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
 ) -> list[LogRead]:
     statement = apply_filters(
         select(LogEntry).order_by(LogEntry.timestamp.desc()),
@@ -133,11 +133,11 @@ def raw_logs(
 @app.get("/api/logs/query/aggregate", response_model=AggregateResponse)
 def aggregate_logs(
     db: Annotated[Session, Depends(get_db)],
-    search: str | None = None,
-    severity: str | None = None,
-    source: str | None = None,
-    start_date: datetime | None = None,
-    end_date: datetime | None = None,
+    search: Optional[str] = None,
+    severity: Optional[str] = None,
+    source: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
 ) -> AggregateResponse:
     statement = apply_filters(
         select(LogEntry),
