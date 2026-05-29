@@ -5,6 +5,11 @@ services:
       POSTGRES_DB: logs_dashboard
       POSTGRES_USER: logs
       POSTGRES_PASSWORD: logs
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U logs -d logs_dashboard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
       - "5432:5432"
     volumes:
@@ -18,7 +23,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     build:
