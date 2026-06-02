@@ -1,4 +1,28 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
+function buildQuery(params) {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === '' || value === null || value === undefined) {
+      return;
+    }
+
+    if (key === 'start_date' && typeof value === 'string' && value.length === 10) {
+      query.set(key, `${value}T00:00:00`);
+      return;
+    }
+
+    if (key === 'end_date' && typeof value === 'string' && value.length === 10) {
+      query.set(key, `${value}T23:59:59`);
+      return;
+    }
+
+    query.set(key, value);
+  });
+
+  return query.toString();
+}
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -22,13 +46,7 @@ async function request(path, options = {}) {
 }
 
 export function fetchLogs(params) {
-  const query = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== '' && value !== null && value !== undefined) {
-      query.set(key, value);
-    }
-  });
-  return request(`/api/logs?${query.toString()}`);
+  return request(`/api/logs?${buildQuery(params)}`);
 }
 
 export function fetchLog(id) {
@@ -56,11 +74,9 @@ export function deleteLog(id) {
 }
 
 export function fetchAggregate(params) {
-  const query = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== '' && value !== null && value !== undefined) {
-      query.set(key, value);
-    }
-  });
-  return request(`/api/logs/query/aggregate?${query.toString()}`);
+  return request(`/api/logs/query/aggregate?${buildQuery(params)}`);
+}
+
+export function fetchRawLogs(params) {
+  return request(`/api/logs/query/raw?${buildQuery(params)}`);
 }

@@ -1,13 +1,11 @@
 # Logs Dashboard
 
-This is a minimal full-stack logs dashboard built from the assignment brief in the root requirements file.
-
 ## Stack
 
 - FastAPI for the REST API
-- PostgreSQL for relational storage
+- SQLite for relational storage in a local file
 - React with Vite for the frontend
-- Docker Compose to run the whole app
+- PowerShell launcher script for the fastest local startup
 
 ## Features
 
@@ -19,7 +17,69 @@ This is a minimal full-stack logs dashboard built from the assignment brief in t
 - Log creation page
 - Seed data on first startup so the UI is not empty
 
-## Run with Docker
+## Quick start
+
+From the repo root on Windows:
+
+```powershell
+.\run-local.ps1
+```
+
+If you prefer double-clicking or `cmd.exe`:
+
+```bat
+run-local.bat
+```
+
+What the launcher does:
+
+- Creates `backend/.venv` if it does not exist yet
+- Installs backend dependencies the first time, or anytime you run `./run-local.ps1 -Install`
+- Installs frontend dependencies the first time, or anytime you run `./run-local.ps1 -Install`
+- Starts the backend on `http://127.0.0.1:8000`
+- Starts the frontend on `http://127.0.0.1:5173`
+- Records service PIDs in `.local-run/` so they can be stopped cleanly later
+
+The local launcher uses `127.0.0.1` consistently for both apps to avoid browser CORS mismatches between `localhost` and `127.0.0.1`.
+
+The SQLite database file is stored at `backend/logs.db`.
+
+To stop both local services:
+
+```powershell
+.\stop-local.ps1
+```
+
+Open these URLs after startup:
+
+- Frontend: http://127.0.0.1:5173
+- Backend docs: http://127.0.0.1:8000/docs
+
+## Run locally
+
+Backend:
+
+```powershell
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Frontend:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+No extra database service is required. The backend defaults to SQLite automatically.
+
+## Optional Docker run
+
+Docker Compose now uses the same SQLite-backed backend for a lightweight containerized run:
 
 ```bash
 docker compose up --build
@@ -30,29 +90,8 @@ Open these URLs after startup:
 - Frontend: http://localhost:8080
 - Backend docs: http://localhost:8000/docs
 
-## Run locally
-
-Backend:
-
-```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-set DATABASE_URL=postgresql+psycopg://logs:logs@localhost:5432/logs_dashboard
-uvicorn app.main:app --reload
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
 ## Notes
 
-- The frontend is intentionally small and plain. The goal was to satisfy the assignment without adding heavy state management or extra charting libraries.
+- The project is now local-first so it can run without Docker, Postgres, or extra setup beyond Python and Node.
 - The dashboard trend is rendered with a lightweight SVG line chart to keep dependencies low.
 - Validation is handled by Pydantic on the backend, with basic error responses for missing records and bad input.
