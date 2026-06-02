@@ -39,6 +39,8 @@ What the launcher does:
 - Starts the backend on `http://127.0.0.1:8000`
 - Starts the frontend on `http://127.0.0.1:5173`
 - Records service PIDs in `.local-run/` so they can be stopped cleanly later
+- Waits for both services to be reachable before exiting
+- Writes startup logs to `.local-run/backend.log` and `.local-run/frontend.log`
 
 The local launcher uses `127.0.0.1` consistently for both apps to avoid browser CORS mismatches between `localhost` and `127.0.0.1`.
 
@@ -72,7 +74,7 @@ Frontend:
 ```powershell
 cd frontend
 npm install
-npm run dev
+npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
 No extra database service is required. The backend defaults to SQLite automatically.
@@ -89,6 +91,8 @@ Open these URLs after startup:
 
 - Frontend: http://localhost:8080
 - Backend docs: http://localhost:8000/docs
+
+The Docker setup uses a named volume for SQLite, so log data survives container recreation.
 
 ## Notes
 

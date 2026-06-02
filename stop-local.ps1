@@ -13,15 +13,32 @@ foreach ($entry in $pidFiles) {
         continue
     }
 
-    $recordedPid = Get-Content $entry.Path -ErrorAction SilentlyContinue
-    $process = Get-Process -Id $recordedPid -ErrorAction SilentlyContinue
+    $recordedPids = @(Get-Content $entry.Path -ErrorAction SilentlyContinue | Where-Object { $_ } | Select-Object -Unique)
+    $stoppedAny = $false
 
-    if ($process) {
-        Stop-Process -Id $recordedPid -Force
-        Write-Host "Stopped $($entry.Name) (PID $recordedPid)."
-    } else {
+    foreach ($recordedPid in $recordedPids) {
+        $process = Get-Process -Id $recordedPid -ErrorAction SilentlyContinue
+        if ($process) {
+            taskkill /PID $recordedPid /T /F *> $null
+            Write-Host "Stopped $($entry.Name) (PID $recordedPid)."
+            $stoppedAny = $true
+        }
+    }
+
+    if (-not $stoppedAny) {
         Write-Host "$($entry.Name) was not running."
     }
 
     Remove-Item $entry.Path -Force -ErrorAction SilentlyContinue
+}
+
+$listeners = Get-NetTCPConnection -State Listen -LocalPort 8000,5173 -ErrorAction SilentlyContinue |
+    Select-Object LocalPort, OwningProcess -Unique |
+    Sort-Object LocalPort
+
+if ($listeners) {
+    Write-Host 'Ports still in use after stop attempt:'
+    $listeners | ForEach-Object {
+        Write-Host "  Port $($_.LocalPort) -> PID $($_.OwningProcess)"
+    }
 }
