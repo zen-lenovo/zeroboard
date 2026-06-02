@@ -92,6 +92,5 @@ Open these URLs after startup:
 
 ## Notes
 
-- The project is now local-first so it can run without Docker, Postgres, or extra setup beyond Python and Node.
 - The dashboard trend is rendered with a lightweight SVG line chart to keep dependencies low.
 - Validation is handled by Pydantic on the backend, with basic error responses for missing records and bad input.
