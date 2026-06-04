@@ -4,7 +4,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$rootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$rootDir = $PSScriptRoot
 $backendDir = Join-Path $rootDir 'backend'
 $frontendDir = Join-Path $rootDir 'frontend'
 $runStateDir = Join-Path $rootDir '.local-run'
@@ -132,7 +132,7 @@ function Start-ManagedProcess {
         Remove-Item $ErrLogFile -Force -ErrorAction SilentlyContinue
     }
 
-    $process = Start-Process -FilePath $FilePath -WorkingDirectory $WorkingDirectory -ArgumentList $Arguments -RedirectStandardOutput $OutLogFile -RedirectStandardError $ErrLogFile -PassThru
+    $process = Start-Process -FilePath $FilePath -WorkingDirectory $WorkingDirectory -ArgumentList $Arguments -PassThru
     Set-Content -Path $PidFile -Value $process.Id
     Write-Host "Started $Name (PID $($process.Id))."
     return $process

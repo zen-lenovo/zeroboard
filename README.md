@@ -96,5 +96,4 @@ The Docker setup uses a named volume for SQLite, so log data survives container 
 
 ## Notes
 
-- The dashboard trend is rendered with a lightweight SVG line chart to keep dependencies low.
 - Validation is handled by Pydantic on the backend, with basic error responses for missing records and bad input.

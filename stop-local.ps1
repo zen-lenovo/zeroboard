@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-$rootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$rootDir = $PSScriptRoot
 $runStateDir = Join-Path $rootDir '.local-run'
 $pidFiles = @(
     @{ Name = 'backend'; Path = (Join-Path $runStateDir 'backend.pid') },
